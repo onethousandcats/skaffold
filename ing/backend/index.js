@@ -50,6 +50,14 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+    if (!user || !(await bcrypt.compare(password, user.password))) return res.sendStatus(403);
+    const token = jwt.sign({ email: user.email }, SECRET);
+    res.json({ token });
+  });
+});
 app.get('/', (req, res) => {
   res.send('Welcome to the backend!');
 });

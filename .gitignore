@@ -1,5 +1,5 @@
 # Node modules
-node_modules/
+**/node_modules/
 
 # Logs
 logs
@@ -20,11 +20,11 @@ pids
 .env.*.local
 
 # Build output
-dist/
-build/
+**/dist/
+**/build/
 
 # Coverage directory
-coverage/
+**/coverage/
 
 # OS-specific files
 .DS_Store
@@ -42,5 +42,5 @@ Thumbs.db
 .eslintcache
 
 # Temporary files
-tmp/
-temp/
+**/tmp/
+**/temp/
