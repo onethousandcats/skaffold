@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import sqlite3 from 'sqlite3';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
 
 dotenv.config();
 
@@ -58,8 +59,35 @@ app.post('/api/login', (req, res) => {
     res.json({ token });
   });
 });
+
 app.get('/', (req, res) => {
-  res.send('Welcome to the backend!');
+  res.send('Welcome to your Skaffold API!');
+});
+
+app.get('/api/posts', (req, res) => {
+  db.all('SELECT * FROM posts', [], (err, rows) => {
+    res.json(rows);
+  });
+});
+
+app.post('/api/posts', auth, (req, res) => {
+  const { title, content, published } = req.body;
+  db.run('INSERT INTO posts (title, content, published) VALUES (?, ?, ?)', [title, content, published ? 1 : 0], function (err) {
+    res.json({ id: this.lastID });
+  });
+}); 
+
+app.put('/api/posts/:id', auth, (req, res) => {
+  const { title, content, published } = req.body;
+  db.run('UPDATE posts SET title = ?, content = ?, published = ? WHERE id = ?', [title, content, published ? 1 : 0, req.params.id], () => {
+    res.sendStatus(200);
+  });
+});
+
+app.delete('/api/posts/:id', auth, (req, res) => {
+  db.run('DELETE FROM posts WHERE id = ?', [req.params.id], () => {
+    res.sendStatus(200);
+  });
 });
 
 app.get('/secret', (req, res) => {
@@ -68,6 +96,16 @@ app.get('/secret', (req, res) => {
   } else {
     res.status(403).send('Forbidden: Invalid secret');
   }
+});
+
+const storage = multer.diskStorage({
+  destination: './uploads/',
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+});
+const upload = multer({ storage });
+
+app.post('/api/upload', auth, upload.single('file'), (req, res) => {
+  res.json({ url: `/uploads/${req.file.filename}` });
 });
 
 app.listen(port, () => {
